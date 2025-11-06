@@ -364,8 +364,20 @@ class MKVRenameAssistant:
                 basename = os.path.basename(self.current_file.get())
             filename_upper = basename.upper()
             
-            # Controlla per WEB-DL/WEBRip e varianti italiane
-            if any(keyword in filename_upper for keyword in ['WEB-DL', 'WEBDL', 'WEB.DL', 'DLMUX', 'WEBMUX']):
+            # PRIORITÀ 1: Controlla se è una serie TV (S01E01) - quasi sempre WEB
+            if self._is_tv_series(basename):
+                meta['source'] = 'WEB'
+                # Se ha marker espliciti di WEB-DL/DLMux o writing library encoded
+                if (any(keyword in filename_upper for keyword in ['WEB-DL', 'WEBDL', 'WEB.DL', 'DLMUX', 'WEBMUX']) and
+                    self._has_encoded_writing_library()):
+                    meta['type'] = 'WEBRIP'
+                elif any(keyword in filename_upper for keyword in ['WEBRIP', 'WEB.RIP', 'WEB-RIP']):
+                    meta['type'] = 'WEBRIP'
+                else:
+                    # Default per serie TV è WEB-DL
+                    meta['type'] = 'WEBDL'
+            # PRIORITÀ 2: Marker espliciti WEB-DL/WEBRip (per film)
+            elif any(keyword in filename_upper for keyword in ['WEB-DL', 'WEBDL', 'WEB.DL', 'DLMUX', 'WEBMUX']):
                 meta['source'] = 'WEB'
                 # Se troviamo x264/x265 nella writing library, è un WEBRip
                 if self._has_encoded_writing_library():
@@ -378,6 +390,7 @@ class MKVRenameAssistant:
             elif any(service in filename_upper for service in ['AMZN', 'NETFLIX', 'DSNP', 'HULU', 'ATVP']):
                 meta['source'] = 'WEB'
                 meta['type'] = 'WEBDL'  # Default per servizi streaming
+            # PRIORITÀ 3: Risoluzione alta - solo per film senza marker serie
             elif meta['resolution'] in ['2160p', '1080p']:
                 # Determina se è REMUX o ENCODE basandosi su analisi MediaInfo
                 if self._is_remux():
@@ -530,6 +543,11 @@ class MKVRenameAssistant:
                         return True  # È stato encodato - WEBRip
                         
         return False  # Non trova indicatori di encoding - WEB-DL
+    
+    def _is_tv_series(self, filename):
+        """Controlla se il file è una serie TV basandosi sul formato S01E01"""
+        series_pattern = r'S\d+E\d+'
+        return re.search(series_pattern, filename, re.IGNORECASE) is not None
     
     def _get_audio_format(self, audio_track):
         """Ottiene il formato audio dettagliato secondo gli esempi"""
