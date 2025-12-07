@@ -305,7 +305,7 @@ class MKVRenameAssistant:
                     self.generate_name()
                     self.info_text.insert(tk.END, "✅ Nome generato con successo!\n")
                     
-                    # Mostra il risultato all'utente
+                    # Mostra il risultato all'utente (SENZA chiedere di rinominare)
                     title_tmdb = selected.get("title") or selected.get("name", "")
                     date = selected.get("release_date") or selected.get("first_air_date", "")
                     year_tmdb = date.split("-")[0] if date else ""
@@ -315,10 +315,10 @@ class MKVRenameAssistant:
                     if year_tmdb:
                         msg += f" ({year_tmdb})"
                     msg += f"\n\nNuovo nome generato:\n{self.new_name.get()}"
-                    msg += "\n\nVuoi rinominare il file ora?"
+                    msg += f"\n\nTitolo Tracker:\n{self.scene_title.get()}"
+                    msg += "\n\nRinomina quando sei pronto usando il pulsante 'Rinomina File'"
                     
-                    if messagebox.askyesno("TMDb e Nome Generati", msg):
-                        self.rename_file()
+                    messagebox.showinfo("Ricerca e Generazione Completate", msg)
                     
                 except Exception as e:
                     self.info_text.insert(tk.END, f"❌ Errore generazione nome: {str(e)}\n")
@@ -574,7 +574,9 @@ class MKVRenameAssistant:
         # Nome file originale
         if general_track and general_track.file_name:
             meta['name'] = general_track.file_name
-            meta['basename'] = os.path.splitext(general_track.file_name)[0]
+            # Estrai solo il nome file, scarta il percorso
+            basename_with_ext = os.path.basename(general_track.file_name)
+            meta['basename'] = os.path.splitext(basename_with_ext)[0]
         
         # Risoluzione - logica migliorata per gestire aspect ratio diversi
         if video_tracks and video_tracks[0].width and video_tracks[0].height:
