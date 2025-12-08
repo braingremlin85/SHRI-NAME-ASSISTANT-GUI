@@ -575,7 +575,7 @@ class MKVRenameAssistant:
             self.info_text.insert(tk.END, f"Errore estrazione metadati: {e}\n")
                 
     def extract_metadata(self):
-        """Estrae metadati necessari per la rinomina"""
+        # Estrae metadati necessari per la rinomina
         if not self.mediainfo_data:
             return {}
             
@@ -723,7 +723,7 @@ class MKVRenameAssistant:
         return meta
     
     def _is_remux(self):
-        """Determina se il file è un REMUX controllando marker nel nome e MediaInfo"""
+        # Determina se il file è un REMUX controllando marker nel nome e MediaInfo
         if not self.mediainfo_data:
             return False
             
@@ -794,7 +794,7 @@ class MKVRenameAssistant:
         return False
     
     def _has_encoded_writing_library(self):
-        """Controlla se la writing library indica che il file è stato encodato (x264/x265)"""
+        # Controlla se la writing library indica che il file è stato encodato (x264/x265)
         if not self.mediainfo_data:
             return False
             
@@ -831,12 +831,12 @@ class MKVRenameAssistant:
         return False  # Non trova indicatori di encoding - WEB-DL
     
     def _is_tv_series(self, filename):
-        """Controlla se il file è una serie TV basandosi sul formato S01E01"""
+        # Controlla se il file è una serie TV basandosi sul formato S01E01
         series_pattern = r'S\d+E\d+'
         return re.search(series_pattern, filename, re.IGNORECASE) is not None
     
     def _get_audio_format(self, audio_track):
-        """Ottiene il formato audio dettagliato secondo gli esempi"""
+        # Ottiene il formato audio dettagliato secondo gli esempi
         if not audio_track.format:
             return 'Unknown'
             
@@ -879,7 +879,7 @@ class MKVRenameAssistant:
             return RENAME_CONFIG["audio_format_mapping"].get(fmt, fmt)
     
     def _normalize_language(self, language):
-        """Normalizza i codici lingua"""
+        # Normalizza i codici lingua
         if not language:
             return None
             
@@ -889,7 +889,7 @@ class MKVRenameAssistant:
         return RENAME_CONFIG["language_mapping"].get(lang, language.upper())
     
     def _extract_release_group(self):
-        """Estrae il release group dal nome del file"""
+        # Estrae il release group dal nome del file
         filename = os.path.basename(self.current_file.get())
         name_no_ext = os.path.splitext(filename)[0]
         
@@ -908,7 +908,7 @@ class MKVRenameAssistant:
         return RENAME_CONFIG["default_release_group"]
     
     def generate_name(self):
-        """Genera il nuovo nome secondo le regole della scena"""
+        # Genera il nuovo nome secondo le regole della scena
         if not self.mediainfo_data:
             messagebox.showerror("Errore", ERROR_MESSAGES["no_file_selected"])
             return
@@ -934,7 +934,7 @@ class MKVRenameAssistant:
             messagebox.showerror("Errore", f"Errore durante la generazione del nome:\n{str(e)}")
     
     def _build_scene_name(self, meta):
-        """Costruisce il nome secondo le regole della scena basandosi sugli esempi forniti"""
+        # Costruisce il nome secondo le regole della scena basandosi sugli esempi forniti
         # Estrai informazioni dal nome originale
         original_name = meta.get('basename', '')
         
@@ -1070,7 +1070,7 @@ class MKVRenameAssistant:
         return name + '.mkv'
     
     def _get_remux_codec(self, meta):
-        """Ottiene il codec per REMUX (HVEC/AVC format)"""
+        # Ottiene il codec per REMUX (HVEC/AVC format)
         codec = meta.get('video_codec', '')
         mapping = {
             'x265': 'HVEC',
@@ -1083,7 +1083,7 @@ class MKVRenameAssistant:
         return mapping.get(codec, codec)
     
     def _get_webdl_codec(self, meta):
-        """Ottiene il codec per WEB-DL (H.264/H.265 format)"""
+        # Ottiene il codec per WEB-DL (H.264/H.265 format)
         codec = meta.get('video_codec', '')
         mapping = {
             'x265': 'H.265',
@@ -1096,7 +1096,7 @@ class MKVRenameAssistant:
         return mapping.get(codec, codec)
     
     def _get_encode_codec(self, meta):
-        """Ottiene il codec per ENCODE (x264/x265 format)"""
+        # Ottiene il codec per ENCODE (x264/x265 format)
         codec = meta.get('video_codec', '')
         mapping = {
             'HEVC': 'x265',
@@ -1107,7 +1107,7 @@ class MKVRenameAssistant:
         return mapping.get(codec, codec)
     
     def _get_service_name(self, meta):
-        """Ottiene il nome del servizio streaming"""
+        # Ottiene il nome del servizio streaming
         service = meta.get('service', '')
         if not service:
             # Prova a dedurre dal nome del file
@@ -1122,7 +1122,7 @@ class MKVRenameAssistant:
         return RENAME_CONFIG["service_mapping"].get(service, service)
     
     def _get_hdr_info(self, meta):
-        """Ottiene informazioni HDR/DV dai metadati MediaInfo"""
+        # Ottiene informazioni HDR/DV dai metadati MediaInfo
         hdr_components = []
         
         # Prima controlla i metadati MediaInfo per informazioni HDR reali
@@ -1207,7 +1207,7 @@ class MKVRenameAssistant:
         return result
     
     def _extract_title_year(self, filename):
-        """Estrae titolo e anno dal nome del file, con supporto serie TV e correzione TMDb"""
+        # Estrae titolo e anno dal nome del file, con supporto serie TV e correzione TMDb
         # PRIORITÀ 1: Usa il nome corretto da TMDb se disponibile
         if hasattr(self, '_temp_corrected_name'):
             corrected_filename = self._temp_corrected_name
@@ -1287,7 +1287,7 @@ class MKVRenameAssistant:
         return filename, None
     
     def rename_file(self):
-        """Rinomina il file con il nuovo nome"""
+        # Rinomina il file con il nuovo nome
         if not self.current_file.get():
             messagebox.showerror("Errore", ERROR_MESSAGES["no_file_selected"])
             return
@@ -1315,7 +1315,7 @@ class MKVRenameAssistant:
             messagebox.showerror("Errore", f"{ERROR_MESSAGES['rename_error']}\n{str(e)}")
     
     def reset_form(self):
-        """Resetta il form"""
+        # Resetta il form
         self.current_file.set("")
         self.current_name.set("")
         self.new_name.set("")
@@ -1324,7 +1324,7 @@ class MKVRenameAssistant:
         self.mediainfo_data = None
     
     def copy_scene_title(self):
-        """Copia il titolo scene-compliant negli appunti"""
+        # Copia il titolo scene-compliant negli appunti
         scene_title = self.scene_title.get()
         if not scene_title:
             messagebox.showwarning("Avviso", "Nessun titolo tracker disponibile.\nGenera prima il nome.")
@@ -1340,100 +1340,71 @@ class MKVRenameAssistant:
             messagebox.showerror("Errore", f"Impossibile copiare negli appunti:\n{str(e)}")
     
     def _generate_scene_compliant_title(self, tmdb_title=None, tmdb_year=None):
-        """
-        Genera il titolo scene-compliant per il tracker nel formato:
-        Titolo Anno LINGUE RISOLUZIONE FONTE AUDIO_CODEC CANALI HDR_INFO CODEC_VIDEO-RELEASE_GROUP
-        
-        Esempi:
-        - Warfare - Tempo di guerra 2025 ENGLISH - ITALIAN 1080p BluRay DD+ 5.1 x264-iSlaNd
-        - The Abandons 2025 S01 ENGLISH - ITALIAN 2160p NF WEB-DL DD+ 5.1 DV HDR H.265-G66
-        """
-        if not self.mediainfo_data:
-            return ""
-        
-        # Estrai metadati dal file
+        # Genera il titolo scene-compliant per il tracker
         meta = self.extract_metadata()
-        
         # 1. TITOLO (da TMDb se disponibile, altrimenti dal file)
         if tmdb_title:
-            title = tmdb_title
+            scene_title = tmdb_title
         else:
-            title, _ = self._extract_title_year(meta.get('basename', ''))
-            title = title or "Unknown"
-        
+            scene_title, _ = self._extract_title_year(meta.get('basename', ''))
+            scene_title = scene_title or "Unknown"
+
         # 2. ANNO (da TMDb se disponibile, altrimenti dal file)
-        year = tmdb_year or ""
-        
+        year = tmdb_year or meta.get('year', '')
+
         # 3. SERIE TV - aggiunge S01 o S01E01 invece di anno
-        # Estrai stagione ed episodio dal basename
         season_match = re.search(r'S(\d+)', meta.get('basename', ''), re.IGNORECASE)
         episode_match = re.search(r'E(\d+)', meta.get('basename', ''), re.IGNORECASE)
-        
         if season_match or self._is_tv_series(meta.get('basename', '')):
-            # È una serie TV
             if season_match:
                 season_num = season_match.group(1).zfill(2)
                 season_episode = f"S{season_num}"
-                
-                # Aggiungi episodio se presente
                 if episode_match:
                     episode_num = episode_match.group(1).zfill(2)
                     season_episode = f"S{season_num}E{episode_num}"
-                
-                # Per serie TV, se abbiamo l'anno da TMDb, lo includiamo prima della stagione
                 if year:
-                    scene_title = f"{title} {year} {season_episode}"
+                    scene_title = f"{scene_title} {year} {season_episode}"
                 else:
-                    scene_title = f"{title} {season_episode}"
+                    scene_title = f"{scene_title} {season_episode}"
             else:
-                scene_title = title
-        else:
-            # Film - aggiungi anno
-            scene_title = f"{title} {year}" if year else title
-        
-        # 4. LINGUE (ordine alfabetico da tracce audio)
+                scene_title = f"{scene_title}"
+        elif year:
+            scene_title = f"{scene_title} {year}"
+
+        # 4. LINGUE
         languages = meta.get('audio_languages', [])
-        if languages:
-            # Mappa codice lingua a nome completo
-            lang_mapping = {
-                'en': 'ENGLISH',
-                'it': 'ITALIAN',
-                'fr': 'FRENCH',
-                'de': 'GERMAN',
-                'es': 'SPANISH',
-                'pt': 'PORTUGUESE',
-                'ja': 'JAPANESE',
-                'zh': 'CHINESE',
-                'ko': 'KOREAN',
-                'ru': 'RUSSIAN',
-            }
-            
-            lang_names = []
-            for lang_code in sorted(languages):  # Ordine alfabetico
-                lang_name = lang_mapping.get(lang_code.lower(), lang_code.upper())
-                if lang_name not in lang_names:
-                    lang_names.append(lang_name)
-            
-            languages_str = " - ".join(lang_names) if lang_names else ""
-        else:
-            languages_str = ""
-        
+        lang_mapping = {
+            'it': 'ITALIAN', 'en': 'ENGLISH', 'fr': 'FRENCH', 'de': 'GERMAN', 'es': 'SPANISH',
+            'ja': 'JAPANESE', 'zh': 'CHINESE', 'ko': 'KOREAN', 'ru': 'RUSSIAN',
+        }
+        lang_names = []
+        for lang_code in sorted(languages):
+            lang_name = lang_mapping.get(lang_code.lower(), lang_code.upper())
+            if lang_name not in lang_names:
+                lang_names.append(lang_name)
+        languages_str = " - ".join(lang_names) if lang_names else ""
+
         # 5. RISOLUZIONE
         resolution = meta.get('resolution', '1080p')
-        
-        # 6. FONTE (BluRay, WEB-DL, NF, etc.)
+
+        # 6. UHD marker per 2160p
+        uhd_marker = ""
+        if meta.get('type') == 'REMUX' and resolution == '2160p':
+            uhd_marker = "UHD"
+
+        # 7. FONTE (BluRay, WEB-DL, NF, etc.)
         source_parts = []
-        
-        # Servizio streaming (NF, AMZN, DSNP, etc.)
         service = meta.get('service', '')
         if service:
             service_name = RENAME_CONFIG["service_mapping"].get(service, service)
             source_parts.append(service_name)
-        
-        # Tipo di release (BluRay, WEB-DL, REMUX, etc.)
         release_type = meta.get('type', 'UNKNOWN')
+        # Per REMUX, BluRay + REMUX (con UHD se 2160p)
         if release_type == 'REMUX':
-            source_parts.append('BluRay')  # REMUX è una variante di BluRay nel formato scene
+            if uhd_marker:
+                source_parts.append(f"{uhd_marker} BluRay REMUX")
+            else:
+                source_parts.append("BluRay REMUX")
         elif release_type == 'WEBDL':
             source_parts.append('WEB-DL')
         elif release_type == 'WEBRIP':
@@ -1443,92 +1414,57 @@ class MKVRenameAssistant:
         elif release_type == 'DVDRIP':
             source_parts.append('DVDRip')
         else:
-            source_parts.append('BluRay')  # Default
-        
+            source_parts.append('BluRay')
         source_str = " ".join(source_parts) if source_parts else "Unknown"
-        
-        # 7. AUDIO CODEC + CANALI
+
+        # 8. AUDIO CODEC + CANALI
         audio_info = meta.get('audio', '')
-        
-        # 8. HDR INFO (solo se presente)
+
+        # 9. HDR INFO (solo se presente)
         hdr_info = meta.get('hdr_info', [])
         hdr_str = " ".join(hdr_info) if hdr_info else ""
-        
-        # 9. CODEC VIDEO
+
+        # 10. CODEC VIDEO
         if meta.get('type') == 'WEBDL':
-            # Per WEB-DL usa il codec H.264/H.265
             video_codec = self._get_webdl_codec(meta)
         elif meta.get('type') == 'REMUX':
-            # Per REMUX usa x265/x264 nel formato scene
-            codec = meta.get('video_codec', '')
-            if 'HEVC' in codec or 'H.265' in codec or 'x265' in codec:
-                video_codec = 'x265'
-            else:
-                video_codec = 'x264'
+            video_codec = self._get_remux_codec(meta)
         else:
-            # Per ENCODE usa x264/x265
             video_codec = self._get_encode_codec(meta)
-        
-        # 10. RELEASE GROUP - Validazione e pulizia da SHRI
+
+        # 11. RELEASE GROUP
         release_group = meta.get('tag', '')
-        
-        # Se non presente, estrai dal basename e valida
         if not release_group:
             release_group = self._extract_clean_release_group(meta.get('basename', ''))
         else:
-            # Pulisci il tag da trattini iniziali
             release_group = release_group.lstrip('-').strip()
-            # Valida: se contiene invalid patterns, sostituisci con NoGroup
             if self.INVALID_TAG_PATTERN.search(release_group):
                 release_group = 'NoGroup'
-        
-        # 10b. RILEVAMENTO REMUX da markers (VU, UNTOUCHED, etc.)
-        basename = meta.get('basename', '')
-        has_remux_marker = self.MARKER_PATTERN.search(basename) is not None
-        if has_remux_marker and meta.get('type') != 'REMUX':
-            # Se rilevi REMUX marker nel filename, aggiungi al source
-            if 'REMUX' not in source_str:
-                source_str = f"{source_str} REMUX"
-        
+
         # ASSEMBLA IL TITOLO FINALE
         scene_parts = [scene_title]
-        
         if languages_str:
             scene_parts.append(languages_str)
-        
         scene_parts.append(resolution)
         scene_parts.append(source_str)
-        
-        if audio_info:
-            scene_parts.append(audio_info)
-        
         if hdr_str:
             scene_parts.append(hdr_str)
-        
-        scene_parts.append(f"{video_codec}-{release_group}")
-        
+        scene_parts.append(f"{video_codec} {audio_info}-{release_group}" if audio_info else f"{video_codec}-{release_group}")
         final_title = " ".join(scene_parts)
-        
-        # Pulisci spazi multipli (da SHRI WHITESPACE_PATTERN)
         final_title = self.WHITESPACE_PATTERN.sub(" ", final_title).strip()
-        
         return final_title
 
     def _extract_clean_release_group(self, basename):
-        """
-        Estrae e valida il release group dal basename seguendo le regole SHRI.
-        Accetta solo tag validi, altrimenti ritorna 'NoGroup'
-        
-        Logica:
-        1. Estrai l'ultima parte dopo - (hyphen) se presente
-        2. Se contiene REMUX markers (VU, UNTOUCHED, etc.), usa il marker come tag
-        3. Altrimenti prova l'ultima parte separata da .
-        4. Valida che non sia un tag non valido (nogroup, nogrp, unknown, unk)
-        5. Valida lunghezza e caratteri alfanumerici
-        """
+        # Estrae e valida il release group dal basename seguendo le regole SHRI.
+        # Accetta solo tag validi, altrimenti ritorna 'NoGroup'.
+        # Logica:
+        # 1. Estrai l'ultima parte dopo - (hyphen) se presente
+        # 2. Se contiene REMUX markers (VU, UNTOUCHED, etc.), usa il marker come tag
+        # 3. Altrimenti prova l'ultima parte separata da .
+        # 4. Valida che non sia un tag non valido (nogroup, nogrp, unknown, unk)
+        # 5. Valida lunghezza e caratteri alfanumerici
         if not basename:
             return 'NoGroup'
-        
         # Rimuovi estensione file (solo estensioni note)
         # splitext è problematico per file come "x264-GROUP.mkv" perché vede ".x264-GROUP" come estensione
         name_no_ext = basename
@@ -1536,20 +1472,17 @@ class MKVRenameAssistant:
             if basename.lower().endswith(ext):
                 name_no_ext = basename[:-len(ext)]
                 break
-        
         # PRIORITY 1: Cerca formato "something-RELEASEGRP" (hyphen + release group alla fine)
         # Questo è il formato più comune per release group
         if '-' in name_no_ext:
             parts = name_no_ext.rsplit('-', 1)  # Split dall'ultima occorrenza
             if len(parts) == 2:
                 potential_tag = parts[1].strip()
-                
                 # Se è un formato valido (alfanumerico, non troppo lungo)
                 if potential_tag and len(potential_tag) <= 30 and potential_tag.replace('_', '').isalnum():
                     # Valida che non sia un tag non valido
                     if not self.INVALID_TAG_PATTERN.search(potential_tag):
                         return potential_tag
-        
         # PRIORITY 2: Se contiene REMUX markers, usali come tag
         # (VU1080, VU720, VU, UNTOUCHED, REMUX, etc.)
         marker_match = self.MARKER_PATTERN.search(name_no_ext)
@@ -1557,23 +1490,18 @@ class MKVRenameAssistant:
             marker_tag = marker_match.group(1)
             if marker_tag and marker_tag.replace('_', '').isalnum() and len(marker_tag) <= 30:
                 return marker_tag
-        
         # PRIORITY 3: Se nessun hyphen o estrazione fallita, estrai l'ultima parola separata da .
         # MA solo se sembra un release group valido (non solo parole generiche)
         parts = name_no_ext.split('.')
-        
         if not parts:
             return 'NoGroup'
-        
         potential_tag = parts[-1].strip()
-        
         # Se la parte è "Movie" o altre parole comuni senza pattern, è il titolo, non un release group
         # Release group devono avere almeno uno di questi: numeri, hyphen, underscore, etc.
         # Accetta solo se ha almeno un numero o è un release group noto
         if potential_tag and not any(c.isdigit() or c in ('_', '-') for c in potential_tag):
             # Nessun numero, hyphen o underscore - probabilmente è il titolo
             return 'NoGroup'
-        
         # Validazioni:
         # 1. Non vuoto
         # 2. Non più lungo di 30 caratteri
@@ -1583,15 +1511,13 @@ class MKVRenameAssistant:
             or len(potential_tag) > 30 
             or not potential_tag.replace('_', '').isalnum()):
             return 'NoGroup'
-        
         # Controlla se è un tag non valido (nogroup, nogrp, unknown, unk)
         if self.INVALID_TAG_PATTERN.search(potential_tag):
             return 'NoGroup'
-        
         return potential_tag
 
     def _normalize_title_for_search(self, filename):
-        """Normalizza il nome del file per la ricerca TMDb usando approccio year-based"""
+        # Normalizza il nome del file per la ricerca TMDb usando approccio year-based
         # Rimuovi estensione
         name = os.path.splitext(filename)[0]
         
@@ -1705,7 +1631,7 @@ class MKVRenameAssistant:
 
 
     def search_tmdb(self):
-        """Cerca su TMDb il titolo specificato"""
+        # Cerca su TMDb il titolo specificato
         if not self.TMDB_API_KEY:
             response = messagebox.askokcancel("Inserire API key Tmdb?", "Chiave API per Tmdb mancante!\nVuoi inserirla ora?")
             if response:
@@ -1757,7 +1683,7 @@ class MKVRenameAssistant:
             messagebox.showerror("Errore", f"Errore durante la ricerca TMDb: {e}")
     
     def _show_tmdb_selection_dialog(self, results, endpoint):
-        """Mostra dialog per selezione da risultati TMDb con preview"""
+        # Mostra dialog per selezione da risultati TMDb con preview
         dialog = tk.Toplevel(self.root)
         dialog.title("Seleziona il Film/Serie TV Corretto - TMDb")
         dialog.geometry("700x500")
@@ -1873,7 +1799,7 @@ class MKVRenameAssistant:
         return selected_result
     
     def _update_name_with_tmdb_info(self, tmdb_result, endpoint):
-        """Aggiorna il nome del file con le informazioni TMDb"""
+        # Aggiorna il nome del file con le informazioni TMDb
         try:
             # Ottieni informazioni base
             title = tmdb_result.get("title") or tmdb_result.get("name", "")
