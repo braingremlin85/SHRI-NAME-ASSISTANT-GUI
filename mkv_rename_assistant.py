@@ -1591,73 +1591,9 @@ class MKVRenameAssistant:
         return potential_tag
 
     def _normalize_title_for_search(self, filename):
-        """Normalizza il nome del file per la ricerca TMDb con pulizia più aggressiva"""
+        """Normalizza il nome del file per la ricerca TMDb con pulizia aggressiva"""
         # Rimuovi estensione
         name = os.path.splitext(filename)[0]
-        
-        # Rimuovi pattern comuni per serie TV (mantieni solo titolo)
-        if self._is_tv_series(name):
-            # Tronca tutto a partire dal primo marker stagione/episodio
-            episode_match = re.search(r'(?i)\b(?:S\d{1,2}E\d{1,2}|\d{1,2}x\d{2}|Season\s?\d+|\bS\d{1,2}\b|\bEp?\d{1,3}\b)', name)
-            if episode_match:
-                name = name[:episode_match.start()].strip()
-        
-        # Prima rimuovi l'anno se presente per evitare interferenze
-        year_match = re.search(r'\b(19|20)\d{2}\b', name)
-        found_year = year_match.group() if year_match else None
-        
-        # Rimuovi pattern comuni - ordine specifico per evitare frammenti
-        tag_patterns = [
-            # Audio codec prima (per evitare E-AC-3 -> E AC) - ORDINE IMPORTANTE!
-            r'\bE-?AC-?3\b',    # Cattura E-AC-3, E-AC3, EAC-3, EAC3
-            r'\bAC-?3\b',       # Cattura AC-3, AC3
-            r'\bDTS-HD\.MA\b',
-            r'\bDTS-HD\b',
-            r'\bTrueHD\b',
-            r'\bDD[\+P]?[0-9\.]*\b',
-            r'\bDDP[0-9\.]*\b',
-            r'\bAAC[0-9\.]*\b',
-            r'\bATMOS\b',
-            
-            # Marker REMUX e non-compresso
-            r'\b(?:UNTOUCHED|VU|DOWNCONVERT)\b',
-            
-            # Formati video HD (FullHD, HD, SD, etc.)
-            r'\b(?:FullHD|FULLHD|SD|HDReady|HD)\b',
-            
-            # Formati video e risoluzioni (PRIMA di HDR/UHD perché sono più specifici)
-            r'\b(?:1080p|720p|2160p|480p|540p|8k)\b',
-            r'\b(?:h\.?264|h264|x\.?264|x264|h\.?265|h265|x\.?265|x265|avc|hevc|av1|hvec)\b',
-            # Cattura anche il numero isolato che rimane dopo separatori convertiti (es: "H 264" -> "264")
-            r'\b264\b', r'\b265\b',
-            
-            # HDR e video tech - SEPARATE da risoluzioni per evitare conflitti
-            r'\b(?:HDR|HDR10|HLG|DV|DOLBY[-_.]?VISION)\b',  # HDR specifici
-            r'\b(?:UHD|4K)\b',  # Format specifici
-            
-            # Tipi di release
-            r'\b(?:BDRIP|BRRIP|BLURAY|BD|BDREMUX|HDRIP|DVDRIP|WEBRIP|WEB[-_.]?DL|WEBDL|WEB)\b',
-            r'\b(?:DLMUX|WEBMUX|REMUX|PROPER|REPACK|READNFO|INTERNAL|LIMITED|UNRATED)\b',
-            
-            # Color space (dopo HDR specifici per evitare conflitti)
-            r'\b(?:SDR|REC\.?709|REC\.?2020|BT\.?709|BT\.?2020)\b',
-            
-            # Lingue
-            r'\b(?:ITA|ENG|ITALIAN|ENGLISH|MULTI|SUB|SUBS|DUBBED|DUB)\b',
-            
-            # Servizi streaming
-            r'\b(?:AMZN|AMAZON|NETFLIX|NF|DSNP|DISNEY|HULU|ATVP|APPLE|MAX|HBO|PARAMOUNT|PEACOCK|CRUNCHYROLL|FUNIMATION)\b',
-            
-            # Altri tag
-            r'\b(?:DIRECTOR\'?S?\.?CUT|EXTENDED|THEATRICAL|UNCUT|REMASTERED|CRITERION|RESYNC)\b',
-            
-            # Anno (dopo aver salvato quello trovato)
-            r'\b(19|20)\d{2}\b',
-            
-            # Release group (alla fine) - Pattern più specifico
-            r'[-_](?:[A-Za-z0-9]+)$',
-            r'\[[^\]]*\]$',
-        ]
         
         # PRIMA di convertire i separatori, rimuovi i numeri decimali (5.1, 2.0, etc.)
         name = re.sub(r'\b\d+\.\d+\b', '', name)
@@ -1665,95 +1601,124 @@ class MKVRenameAssistant:
         # Pulisci separatori e caratteri speciali
         name = re.sub(r'[._\-\(\)\[\]]+', ' ', name)
         
-        # Adesso applica i pattern regex (dopo aver convertito separatori in spazi)
+        # Rimuovi pattern comuni - ordine specifico per evitare frammenti
+        tag_patterns = [
+            # ANNI - rimuovi subito (anche tra parentesi)
+            r'\b(19|20)\d{2}\b',
+            
+            # Audio codec (SPECIFICI per evitare conflitti)
+            r'\bE[-]?AC[-]?3\b',    # E-AC-3, E-AC3, EAC-3, EAC3
+            r'\bAC[-]?3\b',         # AC-3, AC3
+            r'\bDDP\b',
+            r'\bDD[\+]?\b',         # DD+, DD
+            r'\bDTS[-]?HD\.?MA\b',
+            r'\bDTS[-]?HD\b',
+            r'\bDTS\b',
+            r'\bTrueHD\b',
+            r'\bATMOS\b',
+            r'\bAAC\b',
+            r'\bFLAC\b',
+            
+            # Marker REMUX, VU, etc.
+            r'\b(?:UNTOUCHED|VU|DOWNCONVERT)\b',
+            r'\b(?:REMUX|BDREMUX|DLMUX|WEBMUX)\b',
+            
+            # Formati video - specifici e risoluzioni
+            r'\b(?:2160p|1080p|720p|480p|540p|8k|4k)\b',
+            r'\b(?:FullHD|FULLHD|Full[-]?HD)\b',  # Cattura varianti FullHD
+            r'\b(?:h[-]?264|x[-]?264)\b',
+            r'\b(?:h[-]?265|x[-]?265|hevc)\b',
+            r'\b(?:avc|av1|hvec)\b',
+            r'\bSD\b',
+            r'\bHDReady\b',
+            r'\bHD\b',
+            
+            # HDR e video tech
+            r'\b(?:HDR10|HDR)\b',
+            r'\b(?:DV|DOLBY[-_.]?VISION)\b',
+            r'\b(?:HLG|SDR|REC[-.]?709|REC[-.]?2020|BT[-.]?709|BT[-.]?2020)\b',
+            
+            # Tipi di release
+            r'\b(?:BluRay|BLURAY|BDRIP|BRRip|BD)\b',
+            r'\b(?:WEB[-_.]?DL|WEBDL|WEB[-_.]?RIP|WEBRIP|WEB)\b',
+            r'\b(?:DVDRIP|DVD)\b',
+            r'\b(?:PROPER|REPACK|READNFO|INTERNAL|LIMITED|UNRATED|UNCUT)\b',
+            r'\b(?:DIRECTOR\'?S?\.?CUT|EXTENDED|THEATRICAL|REMASTERED|CRITERION|RESYNC|Resync)\b',
+            
+            # UHD/4K
+            r'\b(?:UHD|4K)\b',
+            
+            # Lingue e sottotitoli
+            r'\b(?:ITA|ENG|ITALIAN|ENGLISH|MULTI|SUB|SUBS|DUBBED|DUB)\b',
+            
+            # Servizi streaming
+            r'\b(?:AMZN|AMAZON|NETFLIX|NF|DSNP|DISNEY|HULU|ATVP|APPLE|MAX|HBO|PARAMOUNT|PEACOCK|CRUNCHYROLL|FUNIMATION)\b',
+            
+            # Parole isolate tech rimaste (FULL da ultimo)
+            r'\bBD\b',
+            r'\bFULL\b',
+            r'\bE\b',  # Lettera singola rimasta
+            r'\bDL\b',
+            
+            # Caratteri speciali rimasti
+            r'[\+/]',
+        ]
+        
+        # Applica i pattern regex
         for pattern in tag_patterns:
             name = re.sub(pattern, '', name, flags=re.IGNORECASE)
         
-        # Rimuovi parole singole rimaste (es: "E", "AC", "3")
-        # LISTA ESTESA di frammenti comuni da rimuovere
-        fragments_to_remove = {
-            'AC', 'E', 'DL', 'WEB', 'HD', 'BD', 'DVD',
-            'P', 'I', 'DDP', 'DD',  # Frammenti audio
-            'H', 'X',  # Frammenti codec
-            'MA', 'S', 'RM', 'RIP',  # Altri frammenti
-            '3', '5', '7',  # Numeri singoli comuni
-            'AVC', 'HEVC', 'H264', 'H265',  # Codec rimasti
-        }
-        
-        # Release groups comuni (parole che spesso rimangono ma non fanno parte del titolo)
-        release_groups_common = {
-            'FHC', 'ABC', 'TASKO', 'XYZ', 'TEAM', 'CREW', 'GROUP',
-            'PROPER', 'REPACK', 'REMUX', 'SCENE',
-            'INTERNAL', 'LIMITED',
-        }
-        
-        # Rilevi pattern release group (release group è tipicamente alfanumerico maiuscolo alla fine)
-        # Es: "Title Something DDNCREW" -> DDNCREW è release group
-        # Es: "Title Something iSlaNd" -> iSlaNd è release group (mix case)
-        words = name.split()
-        
-        # Rimuovi release group dalla fine - Pattern: contiene lettere e/o numeri, 2+ caratteri
-        # Controllo se ultima parola sembra un release group (non tutte minuscole, non è parola comune)
-        if words:
-            last_word = words[-1]
-            last_word_lower = last_word.lower()
-            # È release group se:
-            # 1. È maiuscolo/mixcase (contiene uppercase) E non è parola italiana comune
-            # 2. È lista nota di release groups
-            is_likely_release_group = (
-                (any(c.isupper() for c in last_word) and last_word_lower not in ['a', 'i', 'la', 'di', 'da', 'un']) 
-                or last_word.upper() in release_groups_common
-            )
-            # Escludi parole comuni come "The", "A", etc.
-            is_common_title_word = last_word_lower in ['the', 'a', 'an', 'una', 'un', 'il', 'lo', 'la']
-            
-            if is_likely_release_group and not is_common_title_word and not last_word.isdigit():
-                words.pop()
-        
-        cleaned_words = []
-        for idx, word in enumerate(words):
-            # Mantieni solo parole significative
-            # Rimuovi solo: lettere singole (non comuni) oppure frammenti tecnici noti
-            word_lower = word.lower()
-            
-            # Parole comuni italiane/inglesi monosillabiche da mantenere
-            is_common_word = word_lower in [
-                'a', 'i', 'o', 'e', 'u',  # Articoli/preposizioni IT
-                'la', 'il', 'lo', 'le', 'gli',  # Articoli IT
-                'un', 'una', 'uno',  # Articoli indeterminativi IT
-                'di', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra', 'è',  # Preposizioni IT
-                'the', 'a', 'an',  # Articoli EN
-                'of', 'in', 'at', 'by', 'to', 'or', 'as',  # Preposizioni EN
-            ]
-            
-            # Frammenti tecnici da rimuovere (hanno senso solo nel contesto metadata)
-            is_tech_fragment = word.upper() in [
-                'AC', 'DL', 'WEB', 'BD', 'DVD', 'P', 'DDP', 'DD', 'H', 'X', 'MA', 'S', 'RM', 'RIP', 'E',
-                'AVC', 'HEVC', 'H264', 'H265'
-            ]
-            
-            # Mantieni numeri SE:
-            # - all'inizio (es: "12 Rounds") OPPURE
-            # - circondati da parole significative (es: "Rounds 3 Lockdown")
-            is_number = word.isdigit()
-            is_start_number = is_number and idx == 0
-            has_prev_word = idx > 0 and len(words[idx-1]) > 1
-            has_next_word = idx < len(words) - 1 and len(words[idx+1]) > 1
-            is_surrounded_number = is_number and has_prev_word and has_next_word
-            
-            # Rimuovi solo se: parola singola non comune E frammento tecnico
-            should_keep = (len(word) > 1 or is_common_word or is_start_number or is_surrounded_number) and not is_tech_fragment
-            
-            if should_keep:
-                cleaned_words.append(word)
-        
-        # Ricostruisci il titolo
-        name = ' '.join(cleaned_words)
-        
-        # Pulisci spazi multipli e trim
+        # Pulisci spazi multipli dopo rimozione pattern
         name = re.sub(r'\s+', ' ', name).strip()
         
-        # Se il risultato è vuoto o troppo corto, usa il nome originale
+        # Rimuovi release groups comuni dalla fine
+        words = name.split()
+        if words and len(words) > 1:  # Non rimuovere se rimane solo 1 parola
+            last_word = words[-1]
+            last_word_lower = last_word.lower()
+            
+            # Parole comuni che NON sono release groups
+            common_title_words = [
+                'the', 'a', 'an', 'una', 'un', 'uno', 'uno', 'una',
+                'il', 'lo', 'la', 'le', 'gli', 'i',
+                'di', 'da', 'in', 'con', 'del', 'della', 'dello', 'dei', 'delle', 'degl',
+                'nel', 'nella', 'nello', 'nei', 'nelle',
+                'al', 'alla', 'allo', 'ai', 'alle',
+                'and', 'or', 'but', 'by', 'for', 'to', 'as', 'at', 'be', 'is', 'are',
+                'freud', 'comandante',  # Nomi propri comuni come titoli di film
+            ]
+            
+            has_uppercase = any(c.isupper() for c in last_word)
+            is_common_title_word = last_word_lower in common_title_words
+            is_digit_only = last_word.isdigit()
+            has_digits = any(c.isdigit() for c in last_word)
+            has_lowercase = any(c.islower() for c in last_word)
+            
+            # È release group se TUTTI questi:
+            # 1. Ha uppercase E NON è parola comune
+            # 2. Oppure: ha numeri+minuscole (ciano54, ZioRip pattern)
+            # 3. Non è solo cifre
+            # 4. Lunghezza >= 2
+            looks_like_group = (
+                len(last_word) >= 2
+                and not is_digit_only
+                and not is_common_title_word
+                and (
+                    (has_uppercase and (has_digits or has_lowercase))  # Almeno una maiuscola + altro
+                    or (has_digits and has_lowercase and not has_uppercase)  # ciano54 pattern
+                )
+            )
+            
+            if looks_like_group:
+                words.pop()
+        
+        # Ricostruisci il titolo
+        name = ' '.join(words)
+        
+        # Pulisci spazi multipli e trim finali
+        name = re.sub(r'\s+', ' ', name).strip()
+        
+        # Se il risultato è vuoto o troppo corto, usa il nome originale minimalista
         if not name or len(name) < 3:
             name = os.path.splitext(filename)[0]
             name = re.sub(r'[._-]', ' ', name)
