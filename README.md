@@ -43,20 +43,27 @@ Output: "The.Nice.Guys.2016.ITALIAN.1080p.BluRay.DD5.1.x264-GROUP.mkv"
 
 La chiave API si configura in ordine di priorità:
 
-1. **Variabile d'Ambiente**
+1. **File Configurazione** (`config.ini`)
+   ```ini
+   [DEFAULT]
+   TmdbApiKey = your-api-key-here
+   ```
+   Salva la chiave in `config.ini` (file locale, non committato)
+
+2. **Variabile d'Ambiente**
    ```bash
    export TMDB_API_KEY="your-key"
    python mkv_rename_assistant.py
    ```
 
-2. **File Locale** (`.tmdb_config`)
+3. **File Locale** (`.tmdb_config`)
    ```bash
    echo "your-key" > .tmdb_config
    ```
 
-3. **Dialog Interattivo** (primo avvio)
+4. **Dialog Interattivo** (primo avvio)
    - L'app chiede la chiave
-   - Salva automaticamente in `.tmdb_config`
+   - Salva automaticamente in `config.ini`
 
 **Ottieni la chiave:** https://www.themoviedb.org/settings/api
 
