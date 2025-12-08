@@ -75,3 +75,4 @@ profile.stats
 
 # TMDb Configuration (sensitive - never commit)
 .tmdb_config
+config.ini
